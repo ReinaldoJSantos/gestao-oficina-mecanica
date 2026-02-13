@@ -8,6 +8,9 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=20)
     cpf = models.CharField(max_length=14, unique=True)
 
+    def __str__(self):
+        return self.nome  # Agora no Admin aparecerá "João Silva" em vez de "Object (1)"
+
 
 class Veiculo(models.Model):
     cliente = models.ForeignKey(
@@ -16,6 +19,9 @@ class Veiculo(models.Model):
     placa = models.CharField(max_length=7, unique=True)
     modelo = models.CharField(max_length=50)
     marca = models.CharField(max_length=50)
+    
+    def __str__(self):
+        return f"{self.modelo} - {self.placa}"  # Aparecerá "Civic - ABC1234"
 
 
 class OrdemServico(models.Model):

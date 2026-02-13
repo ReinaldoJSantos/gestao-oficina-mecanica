@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            bg-color: #f2f2f2;
+        }
+
+        .total {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        .header img {
+            max-width: 150px;
+            /* Caso você adicione um logo depois */
+        }
+
+        /* Estilo para zebra na tabela do PDF */
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>OFICINA MECÂNICA PRO</h1>
+        <p>CNPJ: 00.000.000/0001-00 | Contato: (11) 99999-9999</p>
+    </div>
+
+    <div class="info">
+        <p><strong>Cliente:</strong> {{ os.veiculo.cliente.nome }}</p>
+        <p><strong>Veículo:</strong> {{ os.veiculo.modelo }} ({{ os.veiculo.placa }})</p>
+        <p><strong>Data:</strong> {{ os.data_criacao|date:"d/m/Y" }}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição</th>
+                <th>Qtd</th>
+                <th>V. Unitário</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in os.itens.all %}
+            <tr>
+                <td>{{ item.descricao }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ item.valor_unitario }}</td>
+                <td>R$ {{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        TOTAL DO ORÇAMENTO: R$ {{ os.total_geral }}
+    </div>
+</body>
+
+</html>
