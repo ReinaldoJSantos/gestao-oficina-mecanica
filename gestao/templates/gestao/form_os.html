@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Registro de Ordem de Serviço</h2>
+    <form method="post" class="card p-4 shadow">
+        {% csrf_token %} <div class="row">
+            <div class="col-12">{{ form.veiculo|as_crispy_field }}</div>
+            <div class="col-md-6">{{ form.status|as_crispy_field }}</div>
+        </div>
+
+        <h4 class="mt-4">Peças e Serviços</h4>
+        {{ formset.management_form }}
+        <div id="itens-formset">
+            {% for item_form in formset %}
+                <div class="row border-bottom mb-2 pb-2">
+                    <div class="col-md-6">{{ item_form.descricao|as_crispy_field }}</div>
+                    <div class="col-md-2">{{ item_form.quantidade|as_crispy_field }}</div>
+                    <div class="col-md-3">{{ item_form.valor_unitario|as_crispy_field }}</div>
+                    {% if item_form.instance.pk %}
+                        <div class="col-md-1">{{ item_form.DELETE|as_crispy_field }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-success">Salvar Ordem de Serviço</button>
+            <a href="{% url 'historico_veiculo' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

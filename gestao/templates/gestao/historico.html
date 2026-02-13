@@ -1,0 +1,29 @@
+<h1>Histórico do Veículo: {{ placa }}</h1>
+
+<form method="GET">
+    <input type="text" name="placa" placeholder="Digite a placa (ex: ABC1234)">
+    <button type="submit">Buscar</button>
+</form>
+
+<hr>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Status</th>
+            <th>Total (R$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for os in ordens %}
+        <tr>
+            <td>{{ os.data_criacao|date:"d/m/Y" }}</td>
+            <td>{{ os.get_status_display }}</td>
+            <td>{{ os.total_geral }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3">Nenhuma manutenção encontrada para esta placa.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
