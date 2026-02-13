@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+.env
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# PDF gerados (opcional, caso queira ignorar arquivos temporários)
+*.pdf
