@@ -2,7 +2,14 @@
 {% load static %}
 
 {% block content %}
-<h1>Histórico do Veículo: {{ placa }}</h1>
+<h2>
+    Histórico:
+    {% if placa %}
+    <span class="text-primary">{{ placa|upper }}</span>
+    {% else %}
+    <span class="text-muted">Todos os Registros</span>
+    {% endif %}
+</h2>
 
 <form method="GET">
     <input type="text" name="placa" placeholder="Digite a placa (ex: ABC1234)">
@@ -35,6 +42,9 @@
 
                 <a href="{% url 'gerar_pdf_os' os.id %}" target="_blank" class="btn btn-sm btn-danger">
                     PDF 📄
+                </a>
+                <a href="{% url 'enviar_email_os' os.id %}" class="btn btn-sm btn-outline-info">
+                    Enviar E-mail 📧
                 </a>
             </td>
         </tr>

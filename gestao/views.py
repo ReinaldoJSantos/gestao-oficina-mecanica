@@ -1,4 +1,5 @@
-from datetime import date
+from django.core.mail import EmailMessage
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import OSForm, ItemServicoFormSet
 from .models import OrdemServico
@@ -98,3 +99,31 @@ def nova_os(request, pk=None):
     return render(request, "gestao/form_os.html", {"form": form, "formset": formset})
 
 
+@login_required
+def enviar_orcamento_email(request, pk):
+    os = get_object_or_404(OrdemServico, pk=pk)
+
+    # 1. Geramos o PDF
+    html_string = render_to_string("gestao/orcamento_pdf.html", {"os": os})
+    pdf = HTML(string=html_string).write_pdf()
+
+    # 2. Criamos o objeto de e-mail com argumentos nomeados (Seguro!)
+    email = EmailMessage(
+        subject=f"Orçamento de Manutenção - OS {os.id} - {os.veiculo.modelo}",
+        body=f"Olá {os.veiculo.cliente.nome},\n\nSegue em anexo o orçamento detalhado para o veículo {os.veiculo.modelo}.\n\nFicamos no aguardo da sua aprovação.",
+        from_email="reinaldo.rsmaster@gmail.com",  # O e-mail configurado no settings.py
+        to=[os.veiculo.cliente.email],  # Deve ser uma LISTA []
+    )
+
+    # 3. Anexamos o PDF
+    email.attach(f"Orcamento_{os.id}.pdf", pdf, "application/pdf")
+
+    try:
+        email.send()
+        messages.success(
+            request, f"E-mail enviado com sucesso para {os.veiculo.cliente.email}!"
+        )
+    except Exception as e:
+        messages.error(request, f"Erro técnico ao enviar: {e}")
+
+    return redirect("historico_veiculo")

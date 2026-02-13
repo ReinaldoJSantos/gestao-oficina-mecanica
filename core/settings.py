@@ -141,5 +141,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "reinaldo.rsmaster@gmail.com"  # Seu e-mail da oficina
 EMAIL_HOST_PASSWORD = (
-    "sua-senha-de-app"  # AQUELA SENHA ESPECIAL (não é a sua senha comum)
+    "sace mywc ylki ozdb"  # AQUELA SENHA ESPECIAL (não é a sua senha comum)
 )
