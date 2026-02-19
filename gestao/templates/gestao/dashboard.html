@@ -1,0 +1,62 @@
+{% extends 'gestao/base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                <h5 class="card-title">Ordens de Serviço</h5>
+                <p class="display-6">{{ ultimas_os.count }} Recentes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark shadow">
+            <div class="card-body">
+                <h5 class="card-title">Status: Pendente</h5>
+                <p class="display-6">Acompanhar</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                <h5 class="card-title">Faturamento Estimado</h5>
+                <p class="display-6">R$ {{ valor_total|floatformat:"2g" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-dark text-white">Últimas Atividades</div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Placa</th>
+                    <th>Status</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for os in ultimas_os %}
+                <tr>
+                    <td><strong>{{ os.veiculo.placa|upper }}</strong></td>
+                    <td>
+                        <span class="badge {% if os.status == 'P' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                            {{ os.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ os.data_criacao|date:"d/m/Y" }}</td>
+                    <td>
+                        R$ {{ os.total_geral|floatformat:"2g" }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

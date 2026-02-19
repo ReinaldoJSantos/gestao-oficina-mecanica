@@ -1,6 +1,7 @@
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum, Count
 from .forms import OSForm, ItemServicoFormSet
 from .models import OrdemServico
 from .models import Cliente, Veiculo
@@ -11,9 +12,29 @@ from django.http import HttpResponse
 from weasyprint import HTML
 
 
+@login_required
+def dashboard(request):
+    # conta quantas Os existem por status
+    resumo_status = OrdemServico.objects.values('status').annotate(total=Count('id'))
+
+    # Calcula o valor total de todas as OS (Soma todos os itens)
+    # Nota: Como o tatal_geral é um @propertu, precisamos somar via itens do banco de dados
+    valor_total_pendente = (
+        OrdemServico.objects.filter(status="P").aggregate(
+            soma=Sum("itens__quantidade") * Sum("itens__valor_unitario")
+        )["soma"]
+        or 0
+    )
+    ultimas_os = OrdemServico.objects.all().order_by('-data_criacao')[:5]
+
+    return render(request, 'gestao/dashboard.html', {
+        'ultimoas_os': ultimas_os,
+        'resumo': resumo_status,
+        'valor_total': valor_total_pendente
+    })
+
+
 # View simples para cadastrar Cliente
-
-
 def novo_cliente(request):
     if request.method == "POST":
         nome = request.POST.get("nome")

@@ -16,8 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls import path, include  # Importe o 'include'
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("oficina/", include("gestao.urls")),  # Tudo da gestao começará com /oficina/
+    # Esta linha faz com que o endereço vazio redirecione para a oficina
+    path('', RedirectView.as_view(url='/oficina/'), name='index'),
 ]

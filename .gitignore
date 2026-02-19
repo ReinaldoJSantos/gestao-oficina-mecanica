@@ -1,20 +1,18 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
+# Ambiente Virtual
 venv/
-ENV/
-.env
+env/
+.venv/
 
-# Django
-db.sqlite3
-db.sqlite3-journal
-media/
-staticfiles/
+# Banco de Dados de Teste (Não se sobe o banco, apenas a estrutura)
+*.sqlite3
 
-# Sistema Operacional
+# Python cache
+__pycache__/
+*.pyc
+
+# Arquivos de sistema
 .DS_Store
 Thumbs.db
 
-# PDF gerados (opcional, caso queira ignorar arquivos temporários)
-*.pdf
+# Pasta de arquivos de mídia (PDFs gerados)
+media/
