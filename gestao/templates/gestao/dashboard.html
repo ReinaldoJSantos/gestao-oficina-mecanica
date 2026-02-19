@@ -5,24 +5,40 @@
     <div class="col-md-4">
         <div class="card bg-primary text-white shadow">
             <div class="card-body">
-                <h5 class="card-title">Ordens de Serviço</h5>
-                <p class="display-6">{{ ultimas_os.count }} Recentes</p>
+                <h6 class="text-uppercase small">Faturamento Total</h6>
+                <h2 class="mb-0">R$ {{ valor_total|floatformat:2 }}</h2>
+                <i class="bi bi-cash-stack position-absolute top-50 end-0 translate-middle-y me-3 opacity-50"
+                    style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="card bg-warning text-dark shadow">
             <div class="card-body">
-                <h5 class="card-title">Status: Pendente</h5>
-                <p class="display-6">Acompanhar</p>
+                <h6 class="text-uppercase small">OS Pendentes</h6>
+                <h2 class="mb-0">
+                    {% for item in resumo %}
+                    {% if item.status == 'P' %}{{ item.total }}{% endif %}
+                    {% empty %} 0 {% endfor %}
+                </h2>
+                <i class="bi bi-clock-history position-absolute top-50 end-0 translate-middle-y me-3 opacity-25"
+                    style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="card bg-success text-white shadow">
             <div class="card-body">
-                <h5 class="card-title">Faturamento Estimado</h5>
-                <p class="display-6">R$ {{ valor_total|floatformat:"2g" }}</p>
+                <h6 class="text-uppercase small">OS Finalizadas</h6>
+                <h2 class="mb-0">
+                    {% for item in resumo %}
+                    {% if item.status == 'F' %}{{ item.total }}{% endif %}
+                    {% endfor %}
+                </h2>
+                <i class="bi bi-check2-circle position-absolute top-50 end-0 translate-middle-y me-3 opacity-50"
+                    style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>

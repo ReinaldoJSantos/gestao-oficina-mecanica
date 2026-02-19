@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Cliente, Veiculo, OrdemServico, ItemServico
+from .models import Cliente, Veiculo, OrdemServico, ItemOrdemServico
 
 
 class ItemServicoInline(admin.TabularInline):
-    model = ItemServico
+    model = ItemOrdemServico
     extra = 1  # Quantidade de linhas em branco para novos itens
 
 

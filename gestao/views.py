@@ -2,11 +2,14 @@ from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum, Count
-from .forms import OSForm, ItemServicoFormSet
-from .models import OrdemServico
-from .models import Cliente, Veiculo
+from .models import (
+    OrdemServico,
+    ItemOrdemServico,
+    Veiculo,
+)
 
-from django.contrib.auth.decorators import login_required  # Importe isso
+
+from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
@@ -14,24 +17,30 @@ from weasyprint import HTML
 
 @login_required
 def dashboard(request):
-    # conta quantas Os existem por status
-    resumo_status = OrdemServico.objects.values('status').annotate(total=Count('id'))
+    # 1. Conta quantas OS existem por status
+    resumo_status = OrdemServico.objects.values("status").annotate(total=Count("id"))
 
-    # Calcula o valor total de todas as OS (Soma todos os itens)
-    # Nota: Como o tatal_geral é um @propertu, precisamos somar via itens do banco de dados
-    valor_total_pendente = (
-        OrdemServico.objects.filter(status="P").aggregate(
-            soma=Sum("itens__quantidade") * Sum("itens__valor_unitario")
-        )["soma"]
-        or 0
+    # 2. Busca todas as OS
+    todas_os = OrdemServico.objects.all()
+
+    # 3. Calcula o faturamento total usando a property que criamos
+    # Somamos o total_geral de cada OS que está no banco
+    valor_total = sum(os.total_geral for os in todas_os)
+
+    # 4. (Opcional) Se quiser apenas o que está PENDENTE:
+    # valor_pendente = sum(os.total_geral for os in todas_os if os.status == 'P')
+
+    ultimas_os = todas_os.order_by("-data_criacao")[:5]
+
+    return render(
+        request,
+        "gestao/dashboard.html",
+        {
+            "ultimas_os": ultimas_os,
+            "resumo": resumo_status,
+            "valor_total": valor_total,  # Agora a variável vai com valor real!
+        },
     )
-    ultimas_os = OrdemServico.objects.all().order_by('-data_criacao')[:5]
-
-    return render(request, 'gestao/dashboard.html', {
-        'ultimoas_os': ultimas_os,
-        'resumo': resumo_status,
-        'valor_total': valor_total_pendente
-    })
 
 
 # View simples para cadastrar Cliente
@@ -118,7 +127,10 @@ def nova_os(request, pk=None):
             os = os_instancia
         else:
             os = OrdemServico.objects.create(
-                veiculo=veiculo, status=status, observacoes=observacoes
+                veiculo=veiculo,
+                status=status,
+                observacoes=observacoes,
+                mecanico=request.user,
             )
 
         # 3. Processamos os Itens (vêm do formulário dinâmico)
@@ -128,7 +140,7 @@ def nova_os(request, pk=None):
 
         for desc, qtd, val in zip(descricoes, quantidades, valores):
             if desc:  # Só salva se tiver descrição
-                OrdemServico.objects.create(
+                ItemOrdemServico.objects.create(
                     ordem_servico=os,
                     descricao=desc,
                     quantidade=float(qtd.replace(",", ".")),
