@@ -97,27 +97,52 @@ def historico_veiculo(request):
 
 @login_required
 def nova_os(request, pk=None):
-    instance = get_object_or_404(OrdemServico, pk=pk) if pk else None
+    # Se houver PK, estamos editando. Se não, estamos criando.
+    os_instancia = get_object_or_404(OrdemServico, pk=pk) if pk else None
 
     if request.method == "POST":
-        form = OSForm(request.POST, instance=instance)
-        formset = ItemServicoFormSet(request.POST, instance=instance)
+        # 1. Pegamos os dados básicos da OS
+        veiculo_id = request.POST.get("veiculo")
+        veiculo = get_object_or_404(Veiculo, id=veiculo_id)
+        status = request.POST.get("status", "P")
+        observacoes = request.POST.get("observacoes", "")
 
-        if form.is_valid() and formset.is_valid():
-            os_salva = form.save(commit=False)
-            os_salva.mecanico = request.user
-            os_salva.save()
-            formset.instance = os_salva
-            formset.save()
-            return redirect("historico_veiculo")
-    else:
-        # Se for GET, apenas preparamos os formulários vazios ou com a instância
-        form = OSForm(instance=instance)
-        formset = ItemServicoFormSet(instance=instance)
+        # 2. Criamos ou Atualizamos a OS
+        if os_instancia:
+            os_instancia.veiculo = veiculo
+            os_instancia.status = status
+            os_instancia.observacoes = observacoes
+            os_instancia.save()
+            # Se for edição, talvez você queira limpar os itens antigos antes de re-adicionar
+            os_instancia.itens.all().delete()
+            os = os_instancia
+        else:
+            os = OrdemServico.objects.create(
+                veiculo=veiculo, status=status, observacoes=observacoes
+            )
 
-    # ATENÇÃO: Este return deve estar FORA do 'if' e do 'else'.
-    # Ele é a segurança de que a página sempre carregará algo.
-    return render(request, "gestao/form_os.html", {"form": form, "formset": formset})
+        # 3. Processamos os Itens (vêm do formulário dinâmico)
+        descricoes = request.POST.getlist("descricao[]")
+        quantidades = request.POST.getlist("quantidade[]")
+        valores = request.POST.getlist("valor[]")
+
+        for desc, qtd, val in zip(descricoes, quantidades, valores):
+            if desc:  # Só salva se tiver descrição
+                OrdemServico.objects.create(
+                    ordem_servico=os,
+                    descricao=desc,
+                    quantidade=float(qtd.replace(",", ".")),
+                    valor_unitario=float(val.replace(",", ".")),
+                )
+
+        messages.success(request, "Ordem de Serviço salva com sucesso!")
+        return redirect("historico_veiculo")
+
+    # Se for GET, apenas mostra o formulário
+    veiculos = Veiculo.objects.all()
+    return render(
+        request, "gestao/form_os.html", {"veiculos": veiculos, "os": os_instancia}
+    )
 
 
 @login_required

@@ -1,27 +1,65 @@
-{% extends 'base.html' %} {% load crispy_forms_tags %}
+{% extends 'gestao/base.html' %} {% load crispy_forms_tags %}
 
 {% block content %}
 <div class="container mt-4">
     <h2>Registro de Ordem de Serviço</h2>
     <form method="post" class="card p-4 shadow">
-        {% csrf_token %} <div class="row">
-            <div class="col-12">{{ form.veiculo|as_crispy_field }}</div>
-            <div class="col-md-6">{{ form.status|as_crispy_field }}</div>
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-12 mb-3">
+                <label class="form-label fw-bold">Veículo</label>
+                <select name="veiculo" class="form-select" required>
+                    <option value="">---------</option>
+                    {% for v in veiculos %}
+                    <option value="{{ v.id }}" {% if os.veiculo.id == v.id %}selected{% endif %}>
+                        {{ v.placa }} - {{ v.modelo }} ({{ v.cliente.nome }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Status</label>
+                <select name="status" class="form-select">
+                    <option value="P" {% if os.status == 'P' %}selected{% endif %}>Pendente</option>
+                    <option value="A" {% if os.status == 'A' %}selected{% endif %}>Aprovado</option>
+                    <option value="F" {% if os.status == 'F' %}selected{% endif %}>Finalizado</option>
+                    <option value="C" {% if os.status == 'C' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+        </div>
+        <h4 class="mt-4">Peças e Serviços</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered" id="tabela-itens">
+                <thead class="table-light">
+                    <tr>
+                        <th>Descrição</th>
+                        <th style="width: 150px;">Qtd.</th>
+                        <th style="width: 150px;">Valor Unit.</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="itens-body">
+                    <tr>
+                        <td><input type="text" name="descricao[]" class="form-control" required
+                                placeholder="Ex: Óleo 5W30">
+                        </td>
+                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1"
+                                required></td>
+                        <td><input type="text" name="valor[]" class="form-control" placeholder="0,00" required></td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
-        <h4 class="mt-4">Peças e Serviços</h4>
-        {{ formset.management_form }}
-        <div id="itens-formset">
-            {% for item_form in formset %}
-                <div class="row border-bottom mb-2 pb-2">
-                    <div class="col-md-6">{{ item_form.descricao|as_crispy_field }}</div>
-                    <div class="col-md-2">{{ item_form.quantidade|as_crispy_field }}</div>
-                    <div class="col-md-3">{{ item_form.valor_unitario|as_crispy_field }}</div>
-                    {% if item_form.instance.pk %}
-                        <div class="col-md-1">{{ item_form.DELETE|as_crispy_field }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        <button type="button" class="btn btn-outline-secondary btn-sm mb-4" id="add-item">
+            + Adicionar Item
+        </button>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success btn-lg px-5">Salvar Ordem de Serviço</button>
+            <a href="{% url 'dashboard' %}" class="btn btn-link text-muted">Cancelar</a>
         </div>
 
         <div class="mt-4">
@@ -30,4 +68,26 @@
         </div>
     </form>
 </div>
-{% endblock %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('add-item');
+
+        btn.addEventListener('click', function () {
+            console.log("Botão clicado!"); // Aparece no F12 (Console)
+
+            const tbody = document.getElementById('itens-body');
+            const novaLinha = document.createElement('tr');
+
+            novaLinha.innerHTML = `
+                <td><input type="text" name="descricao[]" class="form-control" required></td>
+                <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1" required></td>
+                <td><input type="text" name="valor[]" class="form-control" placeholder="0,00" required></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+            `;
+
+            tbody.appendChild(novaLinha);
+        });
+    });
+</script>
+    {% endblock %}
