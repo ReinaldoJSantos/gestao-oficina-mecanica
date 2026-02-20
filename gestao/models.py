@@ -14,7 +14,8 @@ class Cliente(models.Model):
 
 class Veiculo(models.Model):
     cliente = models.ForeignKey(
-        Cliente, on_delete=models.CASCADE, related_name="veiculos"
+        Cliente, on_delete=models.CASCADE,
+        related_name="veiculos"
     )
     placa = models.CharField(max_length=7, unique=True)
     modelo = models.CharField(max_length=50)
@@ -34,7 +35,8 @@ class OrdemServico(models.Model):
     veiculo = models.ForeignKey(Veiculo, on_delete=models.CASCADE)
     mecanico = models.ForeignKey(User, on_delete=models.PROTECT)
     data_criacao = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="P")
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES,
+                              default="P")
     observacoes = models.TextField(blank=True)
 
     def __str__(self):
@@ -51,7 +53,8 @@ class ItemOrdemServico(models.Model):
         OrdemServico, on_delete=models.CASCADE, related_name="itens"
     )
     descricao = models.CharField(max_length=200)
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2,
+                                     default=1)
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):

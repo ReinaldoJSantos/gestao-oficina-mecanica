@@ -1,13 +1,14 @@
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Sum, Count
+from django.db.models import Count
 from .models import (
+    Cliente,
     OrdemServico,
     ItemOrdemServico,
     Veiculo,
 )
-
+from django.db import transaction
 
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
@@ -18,7 +19,8 @@ from weasyprint import HTML
 @login_required
 def dashboard(request):
     # 1. Conta quantas OS existem por status
-    resumo_status = OrdemServico.objects.values("status").annotate(total=Count("id"))
+    resumo_status = OrdemServico.objects.values(
+        "status").annotate(total=Count("id"))
 
     # 2. Busca todas as OS
     todas_os = OrdemServico.objects.all()
@@ -28,7 +30,8 @@ def dashboard(request):
     valor_total = sum(os.total_geral for os in todas_os)
 
     # 4. (Opcional) Se quiser apenas o que está PENDENTE:
-    # valor_pendente = sum(os.total_geral for os in todas_os if os.status == 'P')
+    # valor_pendente = sum(os.total_geral for os in todas_os
+    # if os.status == 'P')
 
     ultimas_os = todas_os.order_by("-data_criacao")[:5]
 
@@ -49,7 +52,8 @@ def novo_cliente(request):
         nome = request.POST.get("nome")
         email = request.POST.get("email")
         cpf = request.POST.GET("CPF")
-        Cliente.object.create(nome=nome, email=email, cpf=cpf)
+        Cliente.object.create(nome=nome,
+                              email=email, cpf=cpf)
         return redirect("novo_veiculo")
     return render(request, "gestao/form_clinete.html")
 
@@ -96,12 +100,14 @@ def historico_veiculo(request):
 
     if placa:
         # Se digitou a placa, filtra só por ela
-        ordens = OrdemServico.objects.filter(veiculo__placa__iexact=placa).order_by('-data_criacao')
+        ordens = OrdemServico.objects.filter(
+            veiculo__placa__iexact=placa).order_by('-data_criacao')
     else:
         # Se não digitou nada, mostra as 10 mais recentes do sistema todo
         ordens = OrdemServico.objects.all().order_by('-data_criacao')[:10]
 
-    return render(request, 'gestao/historico.html', {'ordens': ordens, 'placa': placa})
+    return render(request, 'gestao/historico.html', {'ordens': ordens,
+                                                     'placa': placa})
 
 
 @login_required
@@ -122,7 +128,8 @@ def nova_os(request, pk=None):
             os_instancia.status = status
             os_instancia.observacoes = observacoes
             os_instancia.save()
-            # Se for edição, talvez você queira limpar os itens antigos antes de re-adicionar
+            # Se for edição, talvez você queira limpar os itens antigos antes
+            # de re-adicionar
             os_instancia.itens.all().delete()
             os = os_instancia
         else:
@@ -153,7 +160,8 @@ def nova_os(request, pk=None):
     # Se for GET, apenas mostra o formulário
     veiculos = Veiculo.objects.all()
     return render(
-        request, "gestao/form_os.html", {"veiculos": veiculos, "os": os_instancia}
+        request, "gestao/form_os.html", {"veiculos": veiculos,
+                                         "os": os_instancia}
     )
 
 
@@ -179,9 +187,75 @@ def enviar_orcamento_email(request, pk):
     try:
         email.send()
         messages.success(
-            request, f"E-mail enviado com sucesso para {os.veiculo.cliente.email}!"
+            request,
+            f"E-mail enviado com sucesso para {os.veiculo.cliente.email}!"
         )
     except Exception as e:
         messages.error(request, f"Erro técnico ao enviar: {e}")
 
     return redirect("historico_veiculo")
+
+
+def detalhe_os(request, pk):
+    # O get_object_or_404 é uma boa prática para evitar erros 500
+    os = get_object_or_404(OrdemServico, pk=pk)
+    return render(request, "gestao/detalhe_os.html", {"os": os})
+
+
+@login_required
+def salvar_os(request, pk=None):
+    # Se tiver pk, estamos editando. Se não, estamos criando uma nova.
+    os_instancia = get_object_or_404(OrdemServico, pk=pk) if pk else None
+    veiculos = Veiculo.objects.all()
+
+    if request.method == "POST":
+        veiculo_id = request.POST.get("veiculo")
+        status = request.POST.get("status")
+        observacoes = request.POST.get("observacoes")
+
+        veiculo = get_object_or_404(Veiculo, id=veiculo_id)
+
+        # Usamos uma transação para garantir que se der erro nos itens,
+        # não salve a OS
+        with transaction.atomic():
+            if os_instancia:
+                # Editando OS existente
+                os_instancia.veiculo = veiculo
+                os_instancia.status = status
+                os_instancia.observacoes = observacoes
+                os_instancia.save()
+                # Limpamos os itens antigos para re-salvar os novos
+                # (lógica mais simples)
+                os_instancia.itens.all().delete()
+                os = os_instancia
+            else:
+                # Criando Nova OS
+                os = OrdemServico.objects.create(
+                    veiculo=veiculo,
+                    mecanico=request.user,
+                    status=status,
+                    observacoes=observacoes,
+                )
+
+            # Salvando os Itens (Peças/Serviços)
+            descricoes = request.POST.getlist("descricao[]")
+            quantidades = request.POST.getlist("quantidade[]")
+            valores = request.POST.getlist("valor[]")
+
+            for desc, qtd, val in zip(descricoes, quantidades, valores):
+                if desc:
+                    # Limpeza de valores para garantir o formato decimal
+                    valor_limpo = val.replace(".", "").replace(",", ".")
+                    ItemOrdemServico.objects.create(
+                        ordem_servico=os,
+                        descricao=desc,
+                        quantidade=float(qtd.replace(",", ".")),
+                        valor_unitario=float(valor_limpo),
+                    )
+
+        return redirect("detalhe_os", pk=os.id)
+
+    return render(
+        request, "gestao/form_os.html", {"os": os_instancia,
+                                         "veiculos": veiculos}
+    )

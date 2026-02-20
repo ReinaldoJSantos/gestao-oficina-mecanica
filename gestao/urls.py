@@ -10,5 +10,8 @@ urlpatterns = [
     path("veiculo/novo/", views.novo_veiculo, name="novo_veiculo"),
     path("os/email/<int:pk>/", views.enviar_orcamento_email,
          name="enviar_email_os"),
-    path('', views.dashboard, name="dashboard"),
+    path("", views.dashboard, name="dashboard"),
+    path("os/visualizar/<int:pk>/", views.detalhe_os, name="detalhe_os"),
+    path("os/nova/", views.salvar_os, name="nova_os"),
+    path("os/editar/<int:pk>/", views.salvar_os, name="editar_os"),
 ]

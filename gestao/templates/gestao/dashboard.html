@@ -7,72 +7,86 @@
             <div class="card-body">
                 <h6 class="text-uppercase small">Faturamento Total</h6>
                 <h2 class="mb-0">R$ {{ valor_total|floatformat:2 }}</h2>
-                <i class="bi bi-cash-stack position-absolute top-50 end-0 translate-middle-y me-3 opacity-50"
-                    style="font-size: 2rem;"></i>
+                <i class="bi bi-cash-stack position-absolute top-50 end-0 translate-middle-y me-3 opacity-50" style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>
-
     <div class="col-md-4">
-        <div class="card bg-warning text-dark shadow">
+        <div class="card bg-warning text-dark shadow border-0">
             <div class="card-body">
                 <h6 class="text-uppercase small">OS Pendentes</h6>
                 <h2 class="mb-0">
-                    {% for item in resumo %}
-                    {% if item.status == 'P' %}{{ item.total }}{% endif %}
-                    {% empty %} 0 {% endfor %}
+                    {% for item in resumo %}{% if item.status == 'P' %}{{ item.total }}{% endif %}{% empty %}0{% endfor %}
                 </h2>
-                <i class="bi bi-clock-history position-absolute top-50 end-0 translate-middle-y me-3 opacity-25"
-                    style="font-size: 2rem;"></i>
+                <i class="bi bi-clock-history position-absolute top-50 end-0 translate-middle-y me-3 opacity-25" style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>
-
     <div class="col-md-4">
-        <div class="card bg-success text-white shadow">
+        <div class="card bg-success text-white shadow border-0">
             <div class="card-body">
                 <h6 class="text-uppercase small">OS Finalizadas</h6>
                 <h2 class="mb-0">
-                    {% for item in resumo %}
-                    {% if item.status == 'F' %}{{ item.total }}{% endif %}
-                    {% endfor %}
+                    {% for item in resumo %}{% if item.status == 'F' %}{{ item.total }}{% endif %}{% endfor %}
                 </h2>
-                <i class="bi bi-check2-circle position-absolute top-50 end-0 translate-middle-y me-3 opacity-50"
-                    style="font-size: 2rem;"></i>
+                <i class="bi bi-check2-circle position-absolute top-50 end-0 translate-middle-y me-3 opacity-50" style="font-size: 2rem;"></i>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card shadow">
-    <div class="card-header bg-dark text-white">Últimas Atividades</div>
-    <div class="card-body">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Placa</th>
-                    <th>Status</th>
-                    <th>Data</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for os in ultimas_os %}
-                <tr>
-                    <td><strong>{{ os.veiculo.placa|upper }}</strong></td>
-                    <td>
-                        <span class="badge {% if os.status == 'P' %}bg-warning text-dark{% else %}bg-success{% endif %}">
-                            {{ os.get_status_display }}
-                        </span>
-                    </td>
-                    <td>{{ os.data_criacao|date:"d/m/Y" }}</td>
-                    <td>
-                        R$ {{ os.total_geral|floatformat:"2g" }}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card shadow border-0">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+        <h5 class="mb-0">Últimas Atividades</h5>
+        <a href="{% url 'nova_os' %}" class="btn btn-sm btn-light">+ Nova OS</a>
+    </div>
+    <div class="card-body p-0"> <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Placa</th>
+                        <th>Status</th>
+                        <th>Data</th>
+                        <th class="text-end">Valor Total</th>
+                        <th class="text-center" style="width: 150px;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for os in ultimas_os %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.9rem;">
+                                {{ os.veiculo.placa|upper }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if os.status == 'P' %}bg-warning text-dark{% elif os.status == 'F' %}bg-success{% else %}bg-primary{% endif %}">
+                                {{ os.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ os.data_criacao|date:"d/m/Y" }}</td>
+                        <td class="text-end fw-bold text-dark">
+                            R$ {{ os.total_geral|floatformat:2 }}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group shadow-sm">
+                                <a href="{% url 'detalhe_os' os.id %}" class="btn btn-sm btn-white border" title="Visualizar">
+                                    <i class="bi bi-eye text-info"></i>
+                                </a>
+                                <a href="{% url 'editar_os' os.id %}" class="btn btn-sm btn-white border" title="Editar">
+                                    <i class="bi bi-pencil text-warning"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Nenhuma ordem de serviço encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

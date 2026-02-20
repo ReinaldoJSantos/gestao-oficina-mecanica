@@ -40,15 +40,25 @@
                     </tr>
                 </thead>
                 <tbody id="itens-body">
+                    {% if os %}
+                    {% for item in os.itens.all %}
                     <tr>
-                        <td><input type="text" name="descricao[]" class="form-control" required
-                                placeholder="Ex: Óleo 5W30">
-                        </td>
-                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1"
+                        <td><input type="text" name="descricao[]" class="form-control" value="{{ item.descricao }}" required></td>
+                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01"
+                                value="{{ item.quantidade|stringformat:" .2f" }}" required></td>
+                        <td><input type="text" name="valor[]" class="form-control" value="{{ item.valor_unitario|floatformat:2 }}"
                                 required></td>
+                        <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td><input type="text" name="descricao[]" class="form-control" placeholder="Ex: Óleo 5W30" required></td>
+                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1" required></td>
                         <td><input type="text" name="valor[]" class="form-control" placeholder="0,00" required></td>
                         <td></td>
                     </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
