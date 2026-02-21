@@ -1,0 +1,20 @@
+{% extends 'gestao/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="card border-danger shadow mx-auto" style="max-width: 500px;">
+        <div class="card-body text-center">
+            <i class="bi bi-exclamtion-triangle text-danger" style="font-size: 3rem;"></i>
+            <h3 class="mt-3">Tem certeza?</h3>
+            <p>Você está prestes a excluir a <strong>{{ tipo }} #{{ obj.id }}</strong>.<br>Esta ação não pode ser
+                desfeita.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger px-4">Sim, Excluir</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary px-4">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

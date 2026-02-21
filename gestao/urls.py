@@ -14,4 +14,5 @@ urlpatterns = [
     path("os/visualizar/<int:pk>/", views.detalhe_os, name="detalhe_os"),
     path("os/nova/", views.salvar_os, name="nova_os"),
     path("os/editar/<int:pk>/", views.salvar_os, name="editar_os"),
+    path("os/excluir/<int:pk>/", views.excluir_os, name="excluir_os"),
 ]

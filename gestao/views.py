@@ -259,3 +259,19 @@ def salvar_os(request, pk=None):
         request, "gestao/form_os.html", {"os": os_instancia,
                                          "veiculos": veiculos}
     )
+
+
+@login_required
+def excluir_os(request, pk):
+    os = get_object_or_404(
+        OrdemServico,
+        pk=pk
+    )
+
+    if request.method == 'POST':
+        os.delete()
+        return redirect('dashboard')
+    return render(request, 'gestao/confirmar_exclusao.html', {
+        'obj': os,
+        'tipo': 'Orem de serviço'
+    })

@@ -70,11 +70,14 @@
                         </td>
                         <td class="text-center">
                             <div class="btn-group shadow-sm">
-                                <a href="{% url 'detalhe_os' os.id %}" class="btn btn-sm btn-white border" title="Visualizar">
+                                <a href="{% url 'detalhe_os' os.id %}" class="btn btn-sm btn-primary border" title="Visualizar">
                                     <i class="bi bi-eye text-info"></i>
                                 </a>
-                                <a href="{% url 'editar_os' os.id %}" class="btn btn-sm btn-white border" title="Editar">
+                                <a href="{% url 'editar_os' os.id %}" class="btn btn-sm btn-secondary border" title="Editar">
                                     <i class="bi bi-pencil text-warning"></i>
+                                </a>
+                                <a href="{% url 'excluir_os' os.id %}" class="btn btn-sm btn-danger border" title="Excluir">
+                                    <i class="bi bi-trash text-danger"></i>
                                 </a>
                             </div>
                         </td>
