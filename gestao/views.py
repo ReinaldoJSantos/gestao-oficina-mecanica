@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
+from django.db.models import Q
 
 
 @login_required
@@ -51,11 +52,13 @@ def novo_cliente(request):
     if request.method == "POST":
         nome = request.POST.get("nome")
         email = request.POST.get("email")
-        cpf = request.POST.GET("CPF")
-        Cliente.object.create(nome=nome,
-                              email=email, cpf=cpf)
-        return redirect("novo_veiculo")
-    return render(request, "gestao/form_clinete.html")
+        cpf = request.POST.get("cpf")
+        Cliente.objects.create(
+            nome=nome,
+            email=email,
+            cpf=cpf)
+        return redirect("novo_cliente")
+    return render(request, "gestao/form_cliente.html")
 
 
 # View simples para cadastrar veiculo
@@ -275,3 +278,68 @@ def excluir_os(request, pk):
         'obj': os,
         'tipo': 'Orem de serviço'
     })
+
+
+@login_required
+def lista_clientes(request):
+    busca = request.GET.get('search')
+
+    if busca:
+        # Filtra por nome ou cpf que contenha o termo buscado
+        clientes = Cliente.objects.filter(
+            Q(nome__incontains=busca) | Q(cpf__incontains=busca)
+        ).order_by('nome')
+    else:
+        clientes = Cliente.objects.all().order_by('nome')
+
+    return render(request, 'gestao/lista_clientes.html', {
+        'clientes': clientes,
+        'busca': busca
+    })
+
+
+@login_required
+def salvar_cliente(request, pk=None):
+    # Se houver um pk, busca o cliente para editar, senão cria um novo
+    cliente = get_object_or_404(Cliente, pk=pk) if pk else None
+
+    if request.method == 'POST':
+        nome = request.POST.get('nome'),
+        email = request.POST.get('email')
+        telefone = request.POST.get('telefone'),
+        cpf = request.POST.get('cpf')
+
+        if cliente:
+            # Atualiza cliente existente
+            cliente.nome = nome
+            cliente.email = email
+            cliente.telefone = telefone
+            cliente.cpf = cpf
+            cliente.save()
+        else:
+            # Cria novo cliente
+            Cliente.objects.create(
+                nome=nome,
+                email=email,
+                telefone=telefone,
+                cpf=cpf
+            )
+        return redirect('lista_clientes')
+    return render(request, 'gestao/form_cliente.html', {
+        'cliente': cliente
+    })
+
+
+@login_required
+def excluir_cliente(request, pk):
+    cliente = get_object_or_404(*Cliente, pk=pk)
+
+    if request.method == 'POST':
+        cliente.delete()
+
+        return ('lista_clientes')
+    return render(request, 'gestao/confirmar_exclusao.html', {
+        'obj': cliente,
+        'tipo': 'Cliente'
+    })
+

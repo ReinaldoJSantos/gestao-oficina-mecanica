@@ -17,6 +17,7 @@
                     Olá, <strong>{{ user.username }}</strong>
                 </span>
                 <a href="{% url 'nova_os' %}" class="btn btn-sm btn-outline-light me-2">+ Nova OS</a>
+                <a class="btn btn-sm btn-outline-light" href="{% url 'lista_clientes' %}">Clientes</a>
                 <a href="/admin/logout/" class="btn btn-sm btn-danger">Sair</a>
                 {% endif %}
             </div>
