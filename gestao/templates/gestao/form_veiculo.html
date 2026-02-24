@@ -1,0 +1,45 @@
+{% extends 'gestao/base.html' %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="card shadow mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">{% if veiculo %}Editar{% else %}Novo{% endif %} veiculo</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Proprietário</label>
+                    <select name="cliente" id="">
+                        {% for cliente in clientes %}
+                        <option value="{{cliente.id}}">{{cliente.nome}}</option>
+                        {%endfor%}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Marca do veículo</label>
+                    <input type="text" name="marca" class="form-control" value="{{ veiculo.marca|default:'' }}" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Placa</label>
+                        <input type="text" name="placa" class="form-control" placeholder="" value="{{ veiculo|default:'' }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" name="modelo" class="form-control"
+                        value="{{ veiculo.modelo|default:'' }}" required>
+                    </div>
+                </div>
+
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'lista_veiculos' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success px-5">Salvar veículo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

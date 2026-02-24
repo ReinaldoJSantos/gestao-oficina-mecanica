@@ -287,7 +287,7 @@ def lista_clientes(request):
     if busca:
         # Filtra por nome ou cpf que contenha o termo buscado
         clientes = Cliente.objects.filter(
-            Q(nome__incontains=busca) | Q(cpf__incontains=busca)
+            Q(nome__icontains=busca) | Q(cpf__icontains=busca)
         ).order_by('nome')
     else:
         clientes = Cliente.objects.all().order_by('nome')
@@ -332,7 +332,7 @@ def salvar_cliente(request, pk=None):
 
 @login_required
 def excluir_cliente(request, pk):
-    cliente = get_object_or_404(*Cliente, pk=pk)
+    cliente = get_object_or_404(Cliente, pk=pk)
 
     if request.method == 'POST':
         cliente.delete()
@@ -343,3 +343,67 @@ def excluir_cliente(request, pk):
         'tipo': 'Cliente'
     })
 
+
+@login_required
+def lista_veiculos(request):
+    busca = request.GET.get("search")
+    if busca:
+        # Filtra pela placa ou modelo do carro
+        veiculos = Veiculo.objects.filter(
+            Q(placa__icontains=busca) | Q(modelo__icontains=busca)
+        ).order_by("modelo")
+    else:
+        veiculos = Veiculo.objects.all().order_by("placa")
+
+    return render(
+        request, "gestao/lista_veiculos.html", {
+            "veiculos": veiculos,
+            "busca": busca}
+    )
+
+
+@login_required
+def salvar_veiculo(request, pk):
+    # Se houver um pk busca o veiculo para editar, senão cria um novo
+    veiculo = get_object_or_404(Veiculo, pk=pk) if pk else None
+
+    # IMPORTANTE: Pegar todos os clientes para o dropdown
+    clientes = Cliente.objects.all().order_by("nome")
+
+    if request.method == 'POST':
+        placa = request.POST.get('placa'),
+        modelo = request.POST.get('modelo'),
+        marca = request.POST.get('marca')
+
+        if veiculo:
+            veiculo.placa = placa
+            veiculo.modelo = modelo
+            veiculo.marca = marca
+            veiculo.save()
+
+        else:
+            # Cria novo veiculo
+            veiculo.objects.create(
+                placa=placa,
+                modelo=modelo,
+                marca=marca
+            )
+        return redirect('lista_veiculos')
+    return render(
+        request,
+        "gestao/form_veiculo.html",
+        {"veiculo": veiculo, "clientes": clientes},  # Envia para o HTML
+    )
+
+
+@login_required
+def excluir_veiculo(request, pk):
+    veiculo = get_object_or_404(Veiculo, pk=pk)
+
+    if request.method == 'POST':
+        veiculo.delete()
+        return ('lista_veiculos')
+    return render(request, 'gestao/confirmar_exclusao.html', {
+        'obj': veiculo,
+        'tipo': veiculo
+    })
