@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | OficinaPro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0d6efd 0%, #000 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-login {
+            border-radius: 25px;
+            padding: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card login-card p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-gear-wide-connected text-primary" style="font-size: 3rem;"></i>
+                        <h3 class="fw-bold mt-2">OficinaPro</h3>
+                        <p class="text-muted small">Acesse sua conta para gerenciar a oficina</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Usuário</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person"></i></span>
+                                <input type="text" name="username" class="form-control bg-light border-start-0"
+                                    placeholder="Seu usuário" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Senha</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" class="form-control bg-light border-start-0"
+                                    placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger py-2 small text-center">Usuário ou senha inválidos.</div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary w-100 btn-login shadow-sm">
+                            Entrar no Sistema
+                        </button>
+                    </form>
+                </div>
+                <p class="text-center text-white-50 mt-4 small">&copy; 2026 OficinaPro - Gestão Inteligente</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

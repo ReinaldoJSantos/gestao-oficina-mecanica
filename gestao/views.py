@@ -371,8 +371,8 @@ def salvar_veiculo(request, pk):
     clientes = Cliente.objects.all().order_by("nome")
 
     if request.method == 'POST':
-        placa = request.POST.get('placa'),
-        modelo = request.POST.get('modelo'),
+        placa = request.POST.get('placa')
+        modelo = request.POST.get('modelo')
         marca = request.POST.get('marca')
 
         if veiculo:

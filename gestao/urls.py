@@ -22,6 +22,11 @@ urlpatterns = [
     path("veiculos/", views.lista_veiculos, name="lista_veiculos"),
     path("veiculos/novo/", views.salvar_veiculo, name="novo_veiculos"),
     path("veiculos/editar/<int:pk>/", views.salvar_veiculo, name="editar_veiculo"),
-    path("veiculos/excluir<int:pk>/", views.excluir_veiculo, name="excluir_veiculo"),
+    path("veiculos/excluir/<int:pk>/", views.excluir_veiculo, name="excluir_veiculo"),
+    path(
+        "login/",
+        auth_views.LoginView.as_view(template_name="gestao/login.html"),
+        name="login",
+    ),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
