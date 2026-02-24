@@ -125,6 +125,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Isso diz ao Django para procurar arquivos static dentro das pastas dos apps
+STATICFILES_DIRS = [
+    # Se você tiver uma pasta static na raiz do projeto, adicione aqui
+
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -143,3 +149,4 @@ EMAIL_HOST_USER = "reinaldo.rsmaster@gmail.com"  # Seu e-mail da oficina
 EMAIL_HOST_PASSWORD = (
     "sace mywc ylki ozdb"  # AQUELA SENHA ESPECIAL (não é a sua senha comum)
 )
+LOGIN_REDIRECT_URL = "dashboard"  # Ou o nome da sua URL de login

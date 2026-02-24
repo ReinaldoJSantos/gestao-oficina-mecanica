@@ -1,0 +1,31 @@
+/* Customização do Sistema OficinaPro */
+
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    border-bottom: 3px solid #0d6efd;
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #0d6efd !important;
+    transform: translateY(-1px);
+}
+
+/* Estilo para as placas de veículos */
+.font-monospace {
+    letter-spacing: 2px;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+/* Sombra suave para os cards */
+.card {
+    border: none;
+    transition: transform 0.2s;
+}

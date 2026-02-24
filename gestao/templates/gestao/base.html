@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -5,22 +6,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema Oficina Pro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'gestao/css/style.css' %}">
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow mb-4">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">🔧 Oficina Mecânica</a>
+            <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">
+                <i class="bi bi-gear-wide-connected text-primary"></i> OficinaPro
+            </a>
 
-            <div class="d-flex align-items-center">
-                {% if user.is_authenticated %}
-                <span class="navbar-text me-3">
-                    Olá, <strong>{{ user.username }}</strong>
-                </span>
-                <a href="{% url 'nova_os' %}" class="btn btn-sm btn-outline-light me-2">+ Nova OS</a>
-                <a class="btn btn-sm btn-outline-light" href="{% url 'lista_clientes' %}">Clientes</a>
-                <a class="btn btn-sm btn-outline-light" href="{% url 'lista_veiculos' %}">Veículos</a>
-                <a href="/admin/logout/" class="btn btn-sm btn-danger">Sair</a>
-                {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active fw-bold text-white{% endif %}"
+                            href="{% url 'dashboard' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'cliente' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}"
+                            href="{% url 'lista_clientes' %}">
+                            <i class="bi bi-people"></i> Clientes
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'veiculo' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}"
+                            href="{% url 'lista_veiculos' %}">
+                            <i class="bi bi-car-front"></i> Veículos
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'os' in request.resolver_match.url_name %}active fw-bold text-white{% endif %}"
+                            href="{% url 'nova_os' %}">
+                            <i class="bi bi-file-earmark-text"></i> Nova OS
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text me-3 small">
+                        <i class="bi bi-person-circle"></i> Olá, {{ user.username }}
+                    </span>
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-box-arrow-right"></i> Sair
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
         </nav>
