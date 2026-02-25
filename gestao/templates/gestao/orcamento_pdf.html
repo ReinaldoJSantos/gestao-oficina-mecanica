@@ -1,102 +1,163 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 
 <head>
+    <meta charset="UTF-8">
     <style>
-        body {
-            font-family: sans-serif;
-            margin: 20px;
-        }
-
-        .header {
-            text-align: center;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
-        }
-
-        .info {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            bg-color: #f2f2f2;
-        }
-
-        .total {
-            text-align: right;
-            margin-top: 20px;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 1.5cm;
         }
 
-        .header img {
-            max-width: 150px;
-            /* Caso você adicione um logo depois */
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.4;
         }
 
-        /* Estilo para zebra na tabela do PDF */
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #0d6efd;
+            margin-bottom: 20px;
+        }
+
+        .header-logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+
+        .info-table td {
+            padding: 5px 0;
+            vertical-align: top;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .items-table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 12px;
+        }
+
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .total-box {
+            display: inline-block;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+
+        .signature-section {
+            margin-top: 80px;
+            width: 100%;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 250px;
+            margin: 0 auto;
+            padding-top: 5px;
+            text-align: center;
+            font-size: 11px;
         }
     </style>
 </head>
 
 <body>
-    <div class="header">
-        <h1>OFICINA MECÂNICA PRO</h1>
-        <p>CNPJ: 00.000.000/0001-00 | Contato: (11) 99999-9999</p>
-    </div>
 
-    <div class="info">
-        <p><strong>Cliente:</strong> {{ os.veiculo.cliente.nome }}</p>
-        <p><strong>Veículo:</strong> {{ os.veiculo.modelo }} ({{ os.veiculo.placa }})</p>
-        <p><strong>Data:</strong> {{ os.data_criacao|date:"d/m/Y" }}</p>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td class="header-logo">OFICINA MECÂNICA PRO</td>
+            <td style="text-align: right; font-size: 12px;">
+                <strong>OS Nº: {{ os.id }}</strong><br>
+                Data: {{ os.data_criacao|date:"d/m/Y H:i" }}
+            </td>
+        </tr>
+    </table>
 
-    <table>
+    <table class="info-table">
+        <tr>
+            <td style="width: 50%;">
+                <h4 style="margin-bottom: 5px; color: #0d6efd;">CLIENTE</h4>
+                <strong>Nome:</strong> {{ os.veiculo.cliente.nome }}<br>
+                <strong>CPF/CNPJ:</strong> {{ os.veiculo.cliente.cpf }}<br>
+                <strong>Telefone:</strong> {{ os.veiculo.cliente.telefone|default:"Não informado" }}
+            </td>
+            <td style="width: 50%;">
+                <h4 style="margin-bottom: 5px; color: #0d6efd;">VEÍCULO</h4>
+                <strong>Modelo:</strong> {{ os.veiculo.modelo }}<br>
+                <strong>Marca:</strong> {{ os.veiculo.marca }}<br>
+                <strong>Placa:</strong> {{ os.veiculo.placa }}
+            </td>
+        </tr>
+    </table>
+
+    <table class="items-table">
         <thead>
             <tr>
-                <th>Descrição</th>
-                <th>Qtd</th>
-                <th>V. Unitário</th>
-                <th>Subtotal</th>
+                <th>Descrição do Serviço / Peça</th>
+                <th style="text-align: center;">Qtd</th>
+                <th style="text-align: right;">V. Unitário</th>
+                <th style="text-align: right;">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             {% for item in os.itens.all %}
             <tr>
                 <td>{{ item.descricao }}</td>
-                <td>{{ item.quantidade }}</td>
-                <td>R$ {{ item.valor_unitario }}</td>
-                <td>R$ {{ item.subtotal }}</td>
+                <td style="text-align: center;">{{ item.quantidade }}</td>
+                <td style="text-align: right;">R$ {{ item.valor_unitario }}</td>
+                <td style="text-align: right;">R$ {{ item.subtotal }}</td>
+                {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center;">Nenhum item registrado nesta ordem de serviço.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="total">
-        TOTAL DO ORÇAMENTO: R$ {{ os.total_geral }}
+    <div class="total-section">
+        <div class="total-box">
+            <span style="font-size: 14px;">TOTAL GERAL:</span>
+            <strong style="font-size: 20px; color: #0d6efd; margin-left: 10px;">R$ {{ os.total_geral }}</strong>
+        </div>
     </div>
+
+    <table class="signature-section">
+        <tr>
+            <td>
+                <div class="signature-line">Assinatura do Responsável</div>
+            </td>
+            <td>
+                <div class="signature-line">Assinatura do Cliente</div>
+            </td>
+        </tr>
+    </table>
+
 </body>
 
 </html>
