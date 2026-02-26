@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
 from django.db.models import Q
+from .forms import OrdemServicoForm
 
 
 @login_required
@@ -407,3 +408,25 @@ def excluir_veiculo(request, pk):
         'obj': veiculo,
         'tipo': veiculo
     })
+
+
+@login_required
+def editar_os(request, pk):
+    # 1. Busca a Os existente ou dar erro 404 se não encontrar
+    os = get_object_or_404(OrdemServico, pk=pk)
+
+    if request.method == 'POST':
+    # 2. O 'instance=os' Ele diz ao Django para atualizar a OS, e  não criar uma nova
+
+        form = OrdemServicoForm(request.POST, instance=os)
+        if form.get_is_valid():
+            form.save()
+
+            return redirect('historico_veiculo')
+        else:
+            # 3. No GET, ele carrega o form já preenchido com os dados atuais
+            form = OrdemServicoForm(instance=os)
+        return render(request, 'gestao/form_os.html', {
+            'form': form,
+            'os': os
+        })
