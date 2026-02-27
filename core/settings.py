@@ -136,9 +136,9 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = "/login/"  # Usa a tela de login pronta do Django
+LOGIN_URL = "/accounts/login/"  # Usa a tela de login pronta do Django
 LOGIN_REDIRECT_URL = "/dashboard/"  # Para onde ir após o login
-LOGOUT_REDIRECT_URL = "/oficina/login/"  # Para onde ir após sair
+LOGOUT_REDIRECT_URL = "/accounts/login/"  # Para onde ir após sair
 
 # Configurações de E-mail
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

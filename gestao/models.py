@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Cliente(models.Model):
@@ -42,25 +44,70 @@ class OrdemServico(models.Model):
     def __str__(self):
         return f"OS {self.id} - {self.veiculo.placa}"
 
+    # No model OrdemServico, mude para:
+
+
     @property
     def total_geral(self):
-        # Usamos o nome correto da propriedade que definimos abaixo
-        return sum(item.valor_total for item in self.itens.all())
+        return sum(item.subtotal for item in self.itens.all())
+
+
+class Produto(models.Model):
+    nome = models.CharField(max_length=100, verbose_name="Nome da Peça/Produto")
+    descricao = models.TextField(blank=True, null=True, verbose_name="Descrição/Marca")
+    preco_custo = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Preço de Custo"
+    )
+    preco_venda = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Preço de Venda"
+    )
+    estoque_atual = models.IntegerField(default=0, verbose_name="Estoque Atual")
+    estoque_minimo = models.IntegerField(default=5, verbose_name="Estoque Mínimo")
+
+    def __str__(self):
+        return f"{self.nome} - R$ {self.preco_venda}"
+
+    class Meta:
+        verbose_name = "Produto"
+        verbose_name_plural = "Produtos"
 
 
 class ItemOrdemServico(models.Model):
     ordem_servico = models.ForeignKey(
-        OrdemServico, on_delete=models.CASCADE, related_name="itens"
+        "OrdemServico", on_delete=models.CASCADE, related_name="itens"
     )
-    descricao = models.CharField(max_length=200)
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2,
-                                     default=1)
-    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.descricao} (OS {self.ordem_servico.id})"
+    produto = models.ForeignKey(
+        "Produto",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name="Peça/Produto",
+    )
+    quantidade = models.PositiveIntegerField(default=1)
+    valor_unitario = models.DecimalField(
+        max_digits=10, decimal_places=2
+    )  # Salva o preço no momento da venda
 
     @property
-    def valor_total(self):
-        # Cálculo do subtotal deste item específico
+    def subtotal(self):
         return self.quantidade * self.valor_unitario
+
+    def save(self, *args, **kwargs):
+        # Se for a primeira vez salvando, puxa o preço de venda atual do produto
+        if not self.valor_unitario:
+            self.valor_unitario = self.produto.preco_venda
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantidade}x {self.produto.nome} na OS {self.ordem_servico.id}"
+
+
+@receiver(post_save, sender=ItemOrdemServico)
+def atualizar_estoque(sender, instance, created, **kwargs):
+    if created and instance.produto:
+        produto = instance.produto
+        print(
+            f"DEBUG: Descontando {instance.quantidade} de {produto.nome}"
+        )  # Isso aparece no terminal
+        produto.estoque_atual -= instance.quantidade
+        produto.save()

@@ -16,6 +16,10 @@ from django.http import HttpResponse
 from weasyprint import HTML
 from django.db.models import Q
 from .forms import OrdemServicoForm
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.platypus import Table, TableStyle
 
 
 @login_required
@@ -80,21 +84,87 @@ def novo_veiculo(request):
     return render(request, "gestao/form_veiculo.html", {"clientes": clientes})
 
 
-@login_required
-def gerar_pdf_os(request, pk):
-    os = get_object_or_404(OrdemServico, pk=pk)
-    html_string = render_to_string("gestao/orcamento_pdf.html", {"os": os})
+def gerar_pdf_os(request, os_id):
+    os = OrdemServico.objects.get(pk=os_id)
 
-    html = HTML(string=html_string)
-    pdf = html.write_pdf()
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="os_{os.id}.pdf"'
 
-    response = HttpResponse(pdf, content_type="application/pdf")
+    p = canvas.Canvas(response, pagesize=A4)
+    largura, altura = A4
 
-    # Criamos um nome de arquivo dinâmico e limpo
-    data_formatada = os.data_criacao.strftime('%Y%m%d')
-    nome_arquivo = f"OS_{os.id}_{os.veiculo.placa}_{data_formatada}.pdf"
-    response["Content-Disposition"] = f'inline; filename="{nome_arquivo}"'
+    # --- CABEÇALHO ---
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(100, altura - 50, f"ORDEM DE SERVIÇO Nº {os.id}")
 
+    p.setFont("Helvetica", 12)
+    p.drawString(100, altura - 80, f"Cliente: {os.veiculo.cliente.nome}")
+    p.drawString(
+        100, altura - 100, f"Veículo: {os.veiculo.modelo} ({os.veiculo.placa})"
+    )
+    p.drawString(
+        100,
+        altura - 120,
+        f"Mecânico: {os.mecanico.get_full_name() or os.mecanico.username}",
+    )
+    p.drawString(100, altura - 140, f"Status: {os.get_status_display()}")
+    p.drawString(
+        100, altura - 160, f"Data: {os.data_criacao.strftime('%d/%m/%Y %H:%M')}"
+    )
+
+    # --- TABELA DE ITENS (PEÇAS/SERVIÇOS) ---
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(100, altura - 200, "Descrição dos Itens/Peças:")
+
+    # Preparando os dados para a tabela
+    dados_tabela = [["Produto/Peça", "Qtd", "V. Unit", "Subtotal"]]
+
+    for item in os.itens.all():
+        dados_tabela.append(
+            [
+                item.produto.nome if item.produto else "Serviço",
+                str(item.quantidade),
+                f"R$ {item.valor_unitario:.2f}",
+                f"R$ {item.subtotal:.2f}",
+            ]
+        )
+
+    # Adiciona a linha do Total Geral
+    dados_tabela.append(["", "", "TOTAL GERAL:", f"R$ {os.total_geral:.2f}"])
+
+    # Estilização da Tabela
+    tabela = Table(dados_tabela, colWidths=[250, 50, 80, 80])
+    tabela.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                (
+                    "BACKGROUND",
+                    (0, -1),
+                    (-1, -1),
+                    colors.lightgrey,
+                ),  # Fundo para o total
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ]
+        )
+    )
+
+    # Desenha a tabela no PDF
+    tabela.wrapOn(p, largura, altura)
+    tabela.drawOn(p, 50, altura - 230 - (len(dados_tabela) * 20))
+
+    # --- OBSERVAÇÕES ---
+    if os.observacoes:
+        p.setFont("Helvetica-Oblique", 10)
+        p.drawString(50, 100, "Observações:")
+        p.drawString(50, 85, os.observacoes)
+
+    p.showPage()
+    p.save()
     return response
 
 
