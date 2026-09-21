@@ -46,23 +46,28 @@ class OrdemServico(models.Model):
 
     # No model OrdemServico, mude para:
 
-
     @property
     def total_geral(self):
         return sum(item.subtotal for item in self.itens.all())
 
 
 class Produto(models.Model):
-    nome = models.CharField(max_length=100, verbose_name="Nome da Peça/Produto")
-    descricao = models.TextField(blank=True, null=True, verbose_name="Descrição/Marca")
+    nome = models.CharField(
+        max_length=100,
+        verbose_name="Nome da Peça/Produto"
+        )
+    descricao = models.TextField(blank=True, null=True,
+                                 verbose_name="Descrição/Marca")
     preco_custo = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Preço de Custo"
     )
     preco_venda = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Preço de Venda"
     )
-    estoque_atual = models.IntegerField(default=0, verbose_name="Estoque Atual")
-    estoque_minimo = models.IntegerField(default=5, verbose_name="Estoque Mínimo")
+    estoque_atual = models.IntegerField(default=0,
+                                        verbose_name="Estoque Atual")
+    estoque_minimo = models.IntegerField(default=5,
+                                         verbose_name="Estoque Mínimo")
 
     def __str__(self):
         return f"{self.nome} - R$ {self.preco_venda}"
@@ -70,6 +75,7 @@ class Produto(models.Model):
     class Meta:
         verbose_name = "Produto"
         verbose_name_plural = "Produtos"
+        ordering = ['nome']
 
 
 class ItemOrdemServico(models.Model):
@@ -77,11 +83,7 @@ class ItemOrdemServico(models.Model):
         "OrdemServico", on_delete=models.CASCADE, related_name="itens"
     )
     produto = models.ForeignKey(
-        "Produto",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        verbose_name="Peça/Produto",
+        Produto, on_delete=models.PROTECT, verbose_name="Peça/Produto"
     )
     quantidade = models.PositiveIntegerField(default=1)
     valor_unitario = models.DecimalField(

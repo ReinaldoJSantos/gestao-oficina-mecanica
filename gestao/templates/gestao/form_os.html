@@ -1,3 +1,4 @@
+
 {% extends 'gestao/base.html' %} {% load crispy_forms_tags %}
 
 {% block content %}
@@ -28,34 +29,68 @@
                 </select>
             </div>
         </div>
+
         <h4 class="mt-4">Peças e Serviços</h4>
         <div class="table-responsive">
+            <!-- <div style="background: yellow; padding: 10px; color: black; border: 2px solid red;">
+                <strong>TESTE DE DADOS:</strong> <br>
+                Quantidade de produtos na lista: {{ produtos|length }} <br>
+                Nomes encontrados:
+                {% for p in produtos %} [{{ p.nome }}] {% empty %} NENHUM NOME ENCONTRADO {% endfor %}      </div> -->
             <table class="table table-bordered" id="tabela-itens">
                 <thead class="table-light">
                     <tr>
-                        <th>Descrição</th>
+                        <th>Produto/Peça</th>
                         <th style="width: 150px;">Qtd.</th>
                         <th style="width: 150px;">Valor Unit.</th>
                         <th style="width: 50px;"></th>
                     </tr>
                 </thead>
                 <tbody id="itens-body">
-                    {% if os %}
+                    {% if os and os.itens.all %}
+                    {# --- CENÁRIO A: EDITANDO UMA OS COM ITENS --- #}
                     {% for item in os.itens.all %}
                     <tr>
-                        <td><input type="text" name="descricao[]" class="form-control" value="{{ item.descricao }}" required></td>
-                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01"
-                                value="{{ item.quantidade|stringformat:" .2f" }}" required></td>
-                        <td><input type="text" name="valor[]" class="form-control" value="{{ item.valor_unitario|floatformat:2 }}"
-                                required></td>
-                        <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+                        <td>
+                            <select name="produto[]" class="form-select" required>
+                                <option value="">Selecione um produto</option>
+                                {% for p in produtos %}
+                                <option value="{{ p.id }}" {% if item.produto_id == p.id %}selected{% endif %}>
+                                    {{ p.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="quantidade[]" class="form-control" value="{{ item.quantidade }}" step="1"
+                                required>
+                        </td>
+                        <td>
+                            <input type="text" name="valor[]" class="form-control" value="{{ item.valor_unitario|floatformat:2 }}"
+                                required>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% else %}
+                    {# --- CENÁRIO B: CRIANDO UMA OS NOVA (LINHA EM BRANCO) --- #}
                     <tr>
-                        <td><input type="text" name="descricao[]" class="form-control" placeholder="Ex: Óleo 5W30" required></td>
-                        <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1" required></td>
-                        <td><input type="text" name="valor[]" class="form-control" placeholder="0,00" required></td>
+                        <td>
+                            <select name="produto[]" class="form-select" required>
+                                <option value="">Selecione um produto</option>
+                                {% for p in produtos %}
+                                <option value="{{ p.id }}">{{ p.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="quantidade[]" class="form-control" value="1" step="1" required>
+                        </td>
+                        <td>
+                            <input type="text" name="valor[]" class="form-control" placeholder="0.00" required>
+                        </td>
                         <td></td>
                     </tr>
                     {% endif %}
@@ -75,24 +110,31 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const btn = document.getElementById('add-item');
+    document.getElementById('add-item').addEventListener('click', function () {
+        const tbody = document.getElementById('itens-body');
+        const novaLinha = document.createElement('tr');
 
-        btn.addEventListener('click', function () {
-            console.log("Botão clicado!"); // Aparece no F12 (Console)
+        // Geramos as opções do select dinamicamente
+        let opçõesProdutos = '<option value="">Selecione um produto</option>';
+        {% for p in produtos %}
+        opçõesProdutos += '<option value="{{ p.id }}">{{ p.nome }}</option>';
+        {% endfor %}
 
-            const tbody = document.getElementById('itens-body');
-            const novaLinha = document.createElement('tr');
-
-            novaLinha.innerHTML = `
-                <td><input type="text" name="descricao[]" class="form-control" required></td>
-                <td><input type="number" name="quantidade[]" class="form-control" step="0.01" value="1" required></td>
-                <td><input type="text" name="valor[]" class="form-control" placeholder="0,00" required></td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
-            `;
-
-            tbody.appendChild(novaLinha);
-        });
+        novaLinha.innerHTML = `
+            <td>
+                <select name="produto[]" class="form-select" required>${opçõesProdutos}</select>
+            </td>
+            <td>
+                <input type="number" name="quantidade[]" class="form-control" value="1" required>
+            </td>
+            <td>
+                <input type="text" name="valor[]" class="form-control" placeholder="0.00">
+            </td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button>
+            </td>
+        `;
+        tbody.appendChild(novaLinha);
     });
 </script>
-    {% endblock %}
+{% endblock %}

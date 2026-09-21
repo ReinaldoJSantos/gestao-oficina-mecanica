@@ -1,4 +1,4 @@
-#!/media/reinaldo-dev/934f06ba-a78b-4086-a870-181ff4a02cba/home/reinaldo/projetos/gestao-oficina-mecanica/venv/bin/python3
+#!/media/reinaldo-dev/934f06ba-a78b-4086-a870-181ff4a02cba/home/reinaldo/projetos/gestao-oficina-mecanica/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
